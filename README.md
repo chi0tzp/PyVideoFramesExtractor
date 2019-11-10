@@ -1,4 +1,4 @@
-# extractFrames: Extract frames from videos in Python using OpenCV
+# PyVideoFramesExtractor: Extract frames from videos in Python using OpenCV
 
 Extract frames from a single video file or from all video files under a given directory (including all its sub-directories). Extracted frames are stored under a given output directory keeping the structure of the original directory (when a video directory is given, instead of a single video file).
 
