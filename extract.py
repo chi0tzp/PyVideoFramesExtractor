@@ -5,14 +5,21 @@ import os.path as osp
 import argparse
 import cv2
 
+# TODO: add additional supported video formats
+supported_video_ext = ('.avi', '.mp4')
+
+# TODO: add additional supported extracted frame formats
+supported_frame_ext = ('.jpg', '.png')
+
 
 class FrameExtractor:
-    def __init__(self, video_file, output_root='extracted_frames', verbose=False):
+    def __init__(self, video_file, output_dir, frame_ext='.jpg', verbose=False):
         """Extract frames from video file and save them under a given output directory.
 
         Args:
             video_file (str)  : input video filename
-            output_root (str) : output directory
+            output_dir (str)  : output directory where video frames will be extracted
+            frame_ext (str)   : extracted frame file format
             verbose (bool)    : verbose mode
         """
         # Check if given video file exists -- abort otherwise
@@ -20,16 +27,18 @@ class FrameExtractor:
             self.video_file = video_file
         else:
             raise FileExistsError('Video file {} does not exist.'.format(video_file))
-        self.video_basename = osp.basename(video_file).split('.')[0]
-        self.video_ext = osp.basename(video_file).split('.')[1]
-
-        # TODO: check video file extension (`self.video_ext`)
 
         # Create output directory for storing extracted frames
-        self.output_root = output_root
-        self.output_dir = osp.join(self.output_root, osp.dirname(video_file), '{}_frames'.format(self.video_basename))
+        self.output_dir = output_dir
         if not osp.exists(self.output_dir):
             os.makedirs(self.output_dir)
+
+        # Get extracted frame file format
+        self.frame_ext = frame_ext
+        if frame_ext not in supported_frame_ext:
+            raise ValueError("Not supported frame file format: {}".format(frame_ext))
+        else:
+            self.frame_ext = frame_ext
 
         # Get verbose flag
         self.verbose = verbose
@@ -55,7 +64,7 @@ class FrameExtractor:
         success = True
         while success:
             # Write current frame
-            curr_frame_filename = osp.join(self.output_dir, "{:08d}.jpg".format(curr_frame_num))
+            curr_frame_filename = osp.join(self.output_dir, "{:08d}{}".format(curr_frame_num, self.frame_ext))
             cv2.imwrite(curr_frame_filename, frame)
             # Get next frame
             success, frame = self.video.read()
@@ -93,25 +102,41 @@ def main():
     # Extract frames from a (single) given video file
     if args.video:
         # Setup video extractor for given video file
-        extractor = FrameExtractor(video_file=args.video, verbose=not args.quite, output_root=args.output_root)
+        video_basename = osp.basename(args.video).split('.')[0]
+        # Check video file extension
+        video_ext = osp.splitext(args.video)[-1]
+        if video_ext not in supported_video_ext:
+            raise ValueError("Not supported video file format: {}".format(video_ext))
+        # Set extracted frames output directory
+        output_dir = osp.join(args.output_root, '{}_frames'.format(video_basename))
+        # Set up video extractor for given video file
+        extractor = FrameExtractor(video_file=args.video, verbose=not args.quite, output_dir=output_dir)
         # Extract frames
         extractor.extract()
 
     # Extract frames from all video files found under the given directory (including all sub-directories)
     if args.dir:
         if not args.quite:
-            print("#. Extract frames from videos in directory : {}".format(args.dir))
-            print("#. Store extracted frames under            : {}".format(args.output_root))
+            print("#. Extract frames from videos under dir : {}".format(args.dir))
+            print("#. Store extracted frames under         : {}".format(args.output_root))
             print("#. Scan for video files...")
+
         # Scan given dir for video files
         video_list = []
-        for r, d, f in os.walk(args.dir):
+        for r, d, f in walk(args.dir):
             for file in f:
-                video_list.append(os.path.join(r, file))
+                file_basename = osp.basename(file).split('.')[0]
+                file_ext = osp.splitext(file)[-1]
+                if file_ext in supported_video_ext:
+                    video_list.append([osp.join(osp.relpath(r, args.dir), file),
+                                       osp.join(osp.relpath(r, args.dir), "{}_frames".format(file_basename))])
+
         # Extract found video files
         for video_file in video_list:
-            # Setup video extractor for given video file
-            extractor = FrameExtractor(video_file=video_file, verbose=not args.quite, output_root=args.output_root)
+            # Set up video extractor for given video file
+            extractor = FrameExtractor(video_file=osp.join(args.dir, video_file[0]),
+                                       output_dir=osp.join(args.output_root, video_file[1]),
+                                       verbose=not args.quite)
             # Extract frames
             extractor.extract()
 
