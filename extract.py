@@ -8,12 +8,12 @@ import cv2
 
 class FrameExtractor:
     def __init__(self, video_file, output_root='extracted_frames', verbose=False):
-        """Extract frames from video file and save them under a given output_dir.
+        """Extract frames from video file and save them under a given output directory.
 
         Args:
-            video_file (str)  :
-            output_root (str) :
-            verbose (bool)    :
+            video_file (str)  : input video filename
+            output_root (str) : output directory
+            verbose (bool)    : verbose mode
         """
         # Check if given video file exists -- abort otherwise
         if osp.exists(video_file):
@@ -22,6 +22,8 @@ class FrameExtractor:
             raise FileExistsError('Video file {} does not exist.'.format(video_file))
         self.video_basename = osp.basename(video_file).split('.')[0]
         self.video_ext = osp.basename(video_file).split('.')[1]
+
+        # TODO: check video file extension (`self.video_ext`)
 
         # Create output directory for storing extracted frames
         self.output_root = output_root
