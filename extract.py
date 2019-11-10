@@ -1,5 +1,6 @@
 import sys
 import os
+from os import walk
 import os.path as osp
 import argparse
 import cv2
@@ -87,18 +88,30 @@ def main():
     group.add_argument('-d', '--dir', type=str, help='set videos directory')
     args = parser.parse_args()
 
+    # Extract frames from a (single) given video file
     if args.video:
-        if not args.quite:
-            print("#. Extract frames from video file: {}".format(args.video))
         # Setup video extractor for given video file
         extractor = FrameExtractor(video_file=args.video, verbose=not args.quite, output_root=args.output_root)
         # Extract frames
         extractor.extract()
 
+    # Extract frames from all video files found under the given directory (including all sub-directories)
     if args.dir:
         if not args.quite:
-            print("#. Extract frames from videos in directory: {}".format(args.dir))
-        # TODO: add comment
+            print("#. Extract frames from videos in directory : {}".format(args.dir))
+            print("#. Store extracted frames under            : {}".format(args.output_root))
+            print("#. Scan for video files...")
+        # Scan given dir for video files
+        video_list = []
+        for r, d, f in os.walk(args.dir):
+            for file in f:
+                video_list.append(os.path.join(r, file))
+        # Extract found video files
+        for video_file in video_list:
+            # Setup video extractor for given video file
+            extractor = FrameExtractor(video_file=video_file, verbose=not args.quite, output_root=args.output_root)
+            # Extract frames
+            extractor.extract()
 
 
 if __name__ == '__main__':
