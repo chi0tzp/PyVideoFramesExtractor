@@ -95,8 +95,8 @@ def main():
     parser.add_argument('-o', '--output_root', type=str, default='extracted_frames', help="set output root directory")
     parser.add_argument('-q', '--quite', action='store_true', help="set quite mode on")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-v', '--video', type=str, help='set video filename')
-    group.add_argument('-d', '--dir', type=str, help='set videos directory')
+    group.add_argument('--video', type=str, help='set video filename')
+    group.add_argument('--dir', type=str, help='set videos directory')
     args = parser.parse_args()
 
     # Extract frames from a (single) given video file
