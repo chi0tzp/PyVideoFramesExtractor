@@ -4,6 +4,7 @@ from os import walk
 import os.path as osp
 import argparse
 import cv2
+import math
 
 # TODO: add additional supported video formats
 supported_video_ext = ('.avi', '.mp4')
@@ -13,13 +14,15 @@ supported_frame_ext = ('.jpg', '.png')
 
 
 class FrameExtractor:
-    def __init__(self, video_file, output_dir, frame_ext='.jpg', verbose=False):
+    def __init__(self, video_file, output_dir, frame_ext='.jpg', sampling=-1, verbose=False):
         """Extract frames from video file and save them under a given output directory.
 
         Args:
             video_file (str)  : input video filename
             output_dir (str)  : output directory where video frames will be extracted
             frame_ext (str)   : extracted frame file format
+            sampling (int)    : sampling rate -- extract one frame every given number of seconds.
+                                Default=-1 for extracting all available frames
             verbose (bool)    : verbose mode
         """
         # Check if given video file exists -- abort otherwise
@@ -27,6 +30,8 @@ class FrameExtractor:
             self.video_file = video_file
         else:
             raise FileExistsError('Video file {} does not exist.'.format(video_file))
+
+        self.sampling = sampling
 
         # Create output directory for storing extracted frames
         self.output_dir = output_dir
@@ -51,6 +56,8 @@ class FrameExtractor:
 
         # Get video length in frames
         self.video_length = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        if self.sampling != -1:
+            self.video_length = self.video_length // self.sampling
 
         if self.verbose:
             print("#. Extract frames from video file: {}".format(self.video_file))
@@ -60,19 +67,29 @@ class FrameExtractor:
     def extract(self):
         # Get first frame
         success, frame = self.video.read()
-        curr_frame_num = 1
         success = True
+        frame_cnt = 0
+        progress_step = 0
+        progress_length = self.video_length if self.sampling == -1 else math.ceil(self.video_length / math.ceil(self.video_fps))
         while success:
             # Write current frame
-            curr_frame_filename = osp.join(self.output_dir, "{:08d}{}".format(curr_frame_num, self.frame_ext))
+            curr_frame_filename = osp.join(self.output_dir, "{:08d}{}".format(frame_cnt, self.frame_ext))
             cv2.imwrite(curr_frame_filename, frame)
+
             # Get next frame
             success, frame = self.video.read()
+
             if self.verbose:
-                self.progress("  \\__Progress     : ", self.video_length, curr_frame_num)
-            curr_frame_num += 1
-        if self.verbose:
-            print("")
+                self.progress("  \\__Progress     : ", progress_length, progress_step + 1)
+
+            if self.sampling != -1:
+                frame_cnt += math.ceil(self.sampling * self.video_fps)
+                self.video.set(1, frame_cnt)
+            else:
+                frame_cnt += 1
+            progress_step += 1
+            if progress_step >= progress_length:
+                break
 
     @staticmethod
     def progress(msg, total, progress):
@@ -94,6 +111,8 @@ def main():
     parser = argparse.ArgumentParser("Extract frames from videos")
     parser.add_argument('-o', '--output_root', type=str, default='extracted_frames', help="set output root directory")
     parser.add_argument('-q', '--quite', action='store_true', help="set quite mode on")
+    parser.add_argument('-s', '--sampling', type=int, default=-1,
+                        help="extract 1 frame every args.sampling seconds -- default: -1, extract all frames")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--video', type=str, help='set video filename')
     group.add_argument('--dir', type=str, help='set videos directory')
@@ -118,6 +137,10 @@ def main():
     if args.dir:
         if not args.quite:
             print("#. Extract frames from videos under dir : {}".format(args.dir))
+            if args.sampling == -1:
+                print("#. Extract all available frames.")
+            else:
+                print("#. Extract one frame every {} seconds.".format(args.sampling))
             print("#. Store extracted frames under         : {}".format(args.output_root))
             print("#. Scan for video files...")
 
@@ -136,9 +159,12 @@ def main():
             # Set up video extractor for given video file
             extractor = FrameExtractor(video_file=osp.join(args.dir, video_file[0]),
                                        output_dir=osp.join(args.output_root, video_file[1]),
+                                       sampling=args.sampling,
                                        verbose=not args.quite)
             # Extract frames
             extractor.extract()
+
+            break
 
 
 if __name__ == '__main__':
