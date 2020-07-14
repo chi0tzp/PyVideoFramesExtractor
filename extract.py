@@ -83,11 +83,12 @@ global args_
 def extract_video_frames(v_file):
     global args_
     # Set up video extractor for given video file
-    extractor = FrameExtractor(video_file=osp.join(args_.dir, v_file[0]),
-                               output_dir=osp.join(args_.output_root, v_file[1]),
-                               sampling=args_.sampling)
-    # Extract frames
-    extractor.extract()
+    if os.stat(osp.join(args_.dir, v_file[0])).st_size > 0:
+        extractor = FrameExtractor(video_file=osp.join(args_.dir, v_file[0]),
+                                   output_dir=osp.join(args_.output_root, v_file[1]),
+                                   sampling=args_.sampling)
+        # Extract frames
+        extractor.extract()
 
 
 def check_sampling_param(s):
