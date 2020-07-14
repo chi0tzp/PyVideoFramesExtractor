@@ -60,7 +60,6 @@ class FrameExtractor:
     def extract(self):
         # Get first frame
         success, frame = self.video.read()
-        success = True
         frame_cnt = 0
         while success:
             # Write current frame
