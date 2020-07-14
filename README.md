@@ -6,17 +6,16 @@ Extract frames from a single video file or from all video files under a given di
 
 ~~~bash
 python extract.py -h
-usage: Extract frames from videos [-h] [-o OUTPUT_ROOT] [-q]
-                                  [-v VIDEO | -d DIR]
+usage: Extract frames from videos [-h] [--video VIDEO | --dir DIR] [--sampling SAMPLING]                                       [--output_root OUTPUT_ROOT] [-q]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -o OUTPUT_ROOT, --output_root OUTPUT_ROOT
-                        set output root directory
-  -q, --quite           set quite mode on
-  -v VIDEO, --video VIDEO
-                        set video filename
-  -d DIR, --dir DIR     set videos directory
+    -h, --help            show this help message and exit
+    --video VIDEO         set video filename
+    --dir DIR             set videos directory
+    --sampling SAMPLING   extract 1 frame every args.sampling seconds (default: extract all                           frames)
+    --output_root OUTPUT_ROOT
+                          set output root directory
+    -q, --quite           set quite mode on
 ~~~
 
 

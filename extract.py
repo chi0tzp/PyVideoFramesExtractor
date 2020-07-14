@@ -109,13 +109,13 @@ class FrameExtractor:
 def main():
     # Set up a parser for command line arguments
     parser = argparse.ArgumentParser("Extract frames from videos")
-    parser.add_argument('-o', '--output_root', type=str, default='extracted_frames', help="set output root directory")
-    parser.add_argument('-q', '--quite', action='store_true', help="set quite mode on")
-    parser.add_argument('-s', '--sampling', type=int, default=-1,
-                        help="extract 1 frame every args.sampling seconds -- default: -1, extract all frames")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--video', type=str, help='set video filename')
     group.add_argument('--dir', type=str, help='set videos directory')
+    parser.add_argument('--sampling', type=int, default=-1,
+                        help="extract 1 frame every args.sampling seconds (default: extract all frames)")
+    parser.add_argument('--output_root', type=str, default='extracted_frames', help="set output root directory")
+    parser.add_argument('-q', '--quite', action='store_true', help="set quite mode on")
     args = parser.parse_args()
 
     # Extract frames from a (single) given video file
@@ -163,8 +163,6 @@ def main():
                                        verbose=not args.quite)
             # Extract frames
             extractor.extract()
-
-            break
 
 
 if __name__ == '__main__':
