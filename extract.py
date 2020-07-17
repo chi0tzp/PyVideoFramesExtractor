@@ -81,13 +81,17 @@ global args_
 
 def extract_video_frames(v_file):
     global args_
-    # Set up video extractor for given video file
+
     if os.stat(osp.join(args_.dir, v_file[0])).st_size > 0:
-        extractor = FrameExtractor(video_file=osp.join(args_.dir, v_file[0]),
-                                   output_dir=osp.join(args_.output_root, v_file[1]),
-                                   sampling=args_.sampling)
-        # Extract frames
-        extractor.extract()
+        if not osp.isdir(osp.join(args_.output_root, v_file[1])):
+            # Set up video extractor for given video file
+            extractor = FrameExtractor(video_file=osp.join(args_.dir, v_file[0]),
+                                       output_dir=osp.join(args_.output_root, v_file[1]),
+                                       sampling=args_.sampling)
+            # Extract frames
+            extractor.extract()
+    else:
+        os.remove(osp.join(args_.dir, v_file[0]))
 
 
 def check_sampling_param(s):
@@ -147,10 +151,10 @@ def main():
         # Extract frames from found video files
         global args_
         args_ = args
-        pool = Pool(args.workers)
-        for _ in tqdm(pool.imap_unordered(extract_video_frames, video_list), total=len(video_list)):
-            pass
-        pool.close()
+        with Pool(processes=args.workers) as p:
+            with tqdm(total=len(video_list)) as pbar:
+                for i, _ in enumerate(p.imap_unordered(extract_video_frames, video_list)):
+                    pbar.update()
 
 
 if __name__ == '__main__':
