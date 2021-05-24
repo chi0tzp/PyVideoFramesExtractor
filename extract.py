@@ -109,7 +109,7 @@ def main():
     group.add_argument('--dir', type=str, help='set videos directory')
     parser.add_argument('--sampling', type=check_sampling_param, default=-1,
                         help="extract 1 frame every args.sampling seconds (default: extract all frames)")
-    parser.add_argument('--output_root', type=str, default='extracted_frames', help="set output root directory")
+    parser.add_argument('--output-root', type=str, default='extracted_frames', help="set output root directory")
     parser.add_argument('--workers', type=int, default=None, help="Set number of multiprocessing workers")
     args = parser.parse_args()
 
