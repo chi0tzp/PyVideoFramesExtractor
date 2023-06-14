@@ -2,17 +2,30 @@
 
 Extract frames from a single video file or from all video files under a given directory (including all its sub-directories). Extracted frames are stored under a given output directory keeping the structure of the original directory (when a video directory is given, instead of a single video file).
 
+## Installation
+
+You may install the required packages using python's native virtual environment. For Python 3.4+, this can be done as follows:
+
+```bash
+$ python -m venv venv
+$ source venv/bin/activate
+(venv) $ pip install --upgrade pip
+(venv) $ pip install -r requirements.txt
+```
+
+
+
 ## Usage
 
 ~~~bash
 python extract.py -h
-usage: Extract frames from videos [-h] [--video VIDEO | --dir DIR] [--sampling SAMPLING]                                       [--output_root OUTPUT_ROOT] [--workers WORKERS]
+usage: Extract frames from videos [-h] [--video VIDEO | --dir DIR] [--sampling SAMPLING] [--output_root OUTPUT_ROOT] [--workers WORKERS]
 
 optional arguments:
       -h, --help            show this help message and exit
       --video VIDEO         set video filename
       --dir DIR             set videos directory
-      --sampling SAMPLING   extract 1 frame every args.sampling seconds                                                 (default: extract all frames)
+      --sampling SAMPLING   extract 1 frame every args.sampling seconds (default: extract all frames)
   --output_root OUTPUT_ROOT
                             set output root directory
   --workers WORKERS         Set number of multiprocessing workers
